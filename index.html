@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha Cadastral de Cliente | SuporteADV</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d0d0d; color: #e0e0e0; padding: 24px 16px; }
+  .container { max-width: 760px; margin: 0 auto; }
+
+  .header { text-align: center; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #222; }
+  h1 { font-size: 1.5rem; color: #008080; margin-bottom: 6px; }
+  .subtitle { font-size: 0.88rem; color: #888; line-height: 1.5; }
+  .brand { font-size: 0.78rem; margin-top: 8px; color: #555; }
+  .brand span.s { color: #8B00FF; font-weight: 700; }
+  .brand span.a { color: #008080; font-weight: 700; }
+
+  .card { background: #111; border-radius: 10px; border: 1px solid #222; border-left: 3px solid #8B00FF; padding: 20px 22px; margin-bottom: 14px; }
+  .card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #008080; font-weight: 700; margin-bottom: 16px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
+  .field.full { grid-column: 1 / -1; }
+  .field.third { grid-column: span 1; }
+  .field label { display: block; font-size: 0.78rem; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 9px 11px; border: 1.5px solid #333; border-radius: 6px;
+    font-size: 0.92rem; color: #fff; background: #1a1a1a; transition: border-color 0.2s; resize: vertical;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #008080; box-shadow: 0 0 0 2px rgba(0,128,128,0.2); }
+  .field select option { background: #1a1a1a; }
+
+  button.gerar { background: #008080; color: #fff; border: none; padding: 10px 26px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.07em; cursor: pointer; transition: background 0.18s; text-transform: uppercase; margin-right: 10px; }
+  button.gerar:hover { background: #006666; box-shadow: 0 0 10px rgba(0,128,128,0.4); }
+  button.limpar { background: transparent; color: #555; border: 1.5px solid #333; padding: 10px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+  button.imprimir { background: #8B00FF; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+
+  /* Ficha visual */
+  .ficha-wrap { margin-top: 14px; display: none; }
+  .ficha-wrap.visible { display: block; }
+  .ficha-titulo { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #008080; font-weight: 700; margin-bottom: 12px; }
+
+  .ficha-box {
+    background: #fff; color: #1a1a1a; border-radius: 8px; overflow: hidden;
+    font-family: Arial, sans-serif; font-size: 0.85rem;
+  }
+  .ficha-header {
+    background: #1a1a2e; color: #fff; padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .fh-titulo { font-size: 1rem; font-weight: 700; }
+  .fh-sub { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+  .fh-data { text-align: right; font-size: 0.75rem; color: #aaa; }
+  .fh-num { font-size: 1rem; font-weight: 700; color: #00ff00; }
+
+  .ficha-body { padding: 20px 24px; }
+  .fb-secao { margin-bottom: 18px; }
+  .fb-secao-titulo {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #fff; font-weight: 700; background: #1a1a2e;
+    padding: 5px 12px; border-radius: 4px; margin-bottom: 10px; display: inline-block;
+  }
+  .fb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 480px) { .fb-grid { grid-template-columns: 1fr; } }
+  .fb-grid.tres { grid-template-columns: 1fr 1fr 1fr; }
+  .fb-campo { border: 1px solid #ddd; border-radius: 4px; padding: 7px 10px; }
+  .fb-campo.full { grid-column: 1/-1; }
+  .fc-label { font-size: 0.62rem; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+  .fc-val { font-size: 0.85rem; color: #1a1a1a; font-weight: 500; min-height: 18px; }
+  .fc-val.vazio { color: #bbb; font-style: italic; }
+
+  /* Área para foto */
+  .foto-area { width: 90px; height: 110px; border: 2px dashed #ccc; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; float: right;
+    margin: 0 0 10px 16px; background: #f9f9f9; }
+  .foto-area span { font-size: 0.65rem; color: #aaa; text-align: center; padding: 6px; }
+
+  .ficha-footer { background: #f5f5f5; padding: 14px 24px; border-top: 1px solid #ddd;
+    display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #888; }
+  .ff-assinatura { text-align: center; }
+  .ff-linha { width: 180px; border-top: 1px solid #333; margin-bottom: 3px; }
+  .ff-txt { font-size: 0.72rem; color: #555; }
+
+  .acoes { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+  .erro { background: #1a0a0a; border: 1px solid #4a1a1a; border-radius: 8px; padding: 14px 16px; color: #ff6666; font-size: 0.88rem; margin-top: 14px; display: none; }
+  .erro.visible { display: block; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .card, .header, .acoes, .ficha-titulo, .erro { display: none !important; }
+    .ficha-wrap { display: block !important; }
+    .ficha-header { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .fb-secao-titulo { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Ficha Cadastral de Cliente</h1>
+    <p class="subtitle">Gere fichas cadastrais completas para novos clientes, prontas para imprimir ou arquivar digitalmente.</p>
+    <p class="brand"><span class="s">suporte</span><span class="a">ADV</span>.br — Ferramentas para Advogados</p>
+  </div>
+
+  <!-- Dados do escritório -->
+  <div class="card">
+    <div class="card-label">Dados do Escritório</div>
+    <div class="form-grid">
+      <div class="field full"><label>Nome do escritório / advogado</label>
+        <input type="text" id="escNome" placeholder="Ex: Silva & Associados Advogados">
+      </div>
+      <div class="field"><label>OAB</label><input type="text" id="escOAB" placeholder="Ex: 12345/BA"></div>
+      <div class="field"><label>Nº da ficha</label><input type="text" id="numFicha" placeholder="Ex: 001/2025"></div>
+    </div>
+  </div>
+
+  <!-- Dados pessoais -->
+  <div class="card">
+    <div class="card-label">Dados Pessoais do Cliente</div>
+    <div class="form-grid">
+      <div class="field full"><label>Nome completo</label>
+        <input type="text" id="cliNome" placeholder="Nome completo do cliente">
+      </div>
+      <div class="field"><label>Data de nascimento</label><input type="date" id="cliNasc"></div>
+      <div class="field"><label>Estado civil</label>
+        <select id="cliEstCivil">
+          <option value="">Selecione</option>
+          <option>Solteiro(a)</option><option>Casado(a)</option>
+          <option>Divorciado(a)</option><option>Viúvo(a)</option>
+          <option>União estável</option><option>Separado(a)</option>
+        </select>
+      </div>
+      <div class="field"><label>CPF</label><input type="text" id="cliCPF" placeholder="000.000.000-00"></div>
+      <div class="field"><label>RG / Órgão emissor</label><input type="text" id="cliRG" placeholder="Ex: 1234567 SSP/BA"></div>
+      <div class="field"><label>Nacionalidade</label><input type="text" id="cliNac" placeholder="Brasileiro(a)" value="Brasileiro(a)"></div>
+      <div class="field"><label>Profissão / Ocupação</label><input type="text" id="cliProf" placeholder="Ex: Advogado, Engenheiro..."></div>
+      <div class="field"><label>Naturalidade</label><input type="text" id="cliNatural" placeholder="Ex: Salvador/BA"></div>
+    </div>
+  </div>
+
+  <!-- Contato -->
+  <div class="card">
+    <div class="card-label">Contato e Endereço</div>
+    <div class="form-grid">
+      <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="cliTel" placeholder="(00) 99999-9999"></div>
+      <div class="field"><label>E-mail</label><input type="text" id="cliEmail" placeholder="cliente@email.com"></div>
+      <div class="field full"><label>Endereço completo</label>
+        <input type="text" id="cliEnd" placeholder="Rua, número, complemento">
+      </div>
+      <div class="field"><label>Bairro</label><input type="text" id="cliBairro" placeholder="Bairro"></div>
+      <div class="field"><label>Cidade / UF</label><input type="text" id="cliCidade" placeholder="Salvador/BA"></div>
+      <div class="field"><label>CEP</label><input type="text" id="cliCEP" placeholder="00000-000"></div>
+    </div>
+  </div>
+
+  <!-- Dados do caso -->
+  <div class="card">
+    <div class="card-label">Informações do Caso / Processo</div>
+    <div class="form-grid">
+      <div class="field full"><label>Área do direito</label>
+        <select id="areaDir">
+          <option value="">Selecione</option>
+          <option>Trabalhista</option><option>Cível</option><option>Criminal</option>
+          <option>Previdenciário</option><option>Família</option><option>Tributário</option>
+          <option>Imobiliário</option><option>Empresarial</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="field full"><label>Resumo do caso / pretensão</label>
+        <textarea id="resumoCaso" rows="3" placeholder="Descreva brevemente o caso, a pretensão do cliente e os fatos relevantes..."></textarea>
+      </div>
+      <div class="field"><label>Parte contrária</label><input type="text" id="parteContraria" placeholder="Nome da parte contrária"></div>
+      <div class="field"><label>Nº do processo (se houver)</label><input type="text" id="numProcesso" placeholder="Ex: 0001234-56.2025.8.05.0001"></div>
+      <div class="field"><label>Valor estimado da causa (R$)</label><input type="number" id="valorCausa" placeholder="Ex: 50000" step="0.01" min="0"></div>
+      <div class="field"><label>Data do primeiro atendimento</label><input type="date" id="dataPrimeiro"></div>
+    </div>
+  </div>
+
+  <!-- Referência e observações -->
+  <div class="card">
+    <div class="card-label">Referência e Observações</div>
+    <div class="form-grid">
+      <div class="field"><label>Como nos conheceu</label>
+        <select id="comoConheceu">
+          <option value="">Selecione</option>
+          <option>Indicação de cliente</option><option>Google / Internet</option>
+          <option>Instagram / Redes sociais</option><option>OAB / Ordem</option>
+          <option>Familiar</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="field"><label>Indicado por</label><input type="text" id="indicadoPor" placeholder="Nome de quem indicou (opcional)"></div>
+      <div class="field full"><label>Observações internas</label>
+        <textarea id="obs" rows="2" placeholder="Anotações internas sobre o cliente (não aparecem na ficha impressa)..."></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="gerar" onclick="gerar()">GERAR FICHA</button>
+      <button class="limpar" onclick="limpar()">LIMPAR</button>
+    </div>
+  </div>
+
+  <div class="erro" id="erro"></div>
+
+  <div class="ficha-wrap" id="ficha-wrap">
+    <div class="ficha-titulo">📋 Ficha Cadastral — pronta para imprimir</div>
+    <div class="ficha-box" id="ficha-box"></div>
+    <div class="acoes">
+      <button class="imprimir" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+function fmtData(d) {
+  if (!d) return '—';
+  return new Date(d+'T12:00:00').toLocaleDateString('pt-BR');
+}
+function fmtMoeda(v) {
+  if (!v || isNaN(v)) return '—';
+  return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function campo(label, val, full=false) {
+  const cls = full ? 'fb-campo full' : 'fb-campo';
+  const valCls = val ? 'fc-val' : 'fc-val vazio';
+  return `<div class="${cls}"><div class="fc-label">${label}</div><div class="${valCls}">${val || '—'}</div></div>`;
+}
+
+function showErro(msg) {
+  document.getElementById('erro').textContent = msg;
+  document.getElementById('erro').classList.add('visible');
+}
+function hideErro() { document.getElementById('erro').classList.remove('visible'); }
+
+function gerar() {
+  hideErro();
+  const cliNome = v('cliNome');
+  if (!cliNome) return showErro('Informe o nome do cliente.');
+
+  const escNome = v('escNome'); const escOAB = v('escOAB');
+  const numFicha = v('numFicha') || `001/${new Date().getFullYear()}`;
+  const hoje = new Date().toLocaleDateString('pt-BR');
+
+  // Calcular idade
+  let idade = '';
+  const nasc = v('cliNasc');
+  if (nasc) {
+    const d = new Date(nasc+'T12:00:00');
+    const anos = Math.floor((new Date() - d) / (365.25*24*3600*1000));
+    idade = `${anos} anos`;
+  }
+
+  const html = `
+    <div class="ficha-header">
+      <div>
+        <div class="fh-titulo">${escNome || 'Escritório de Advocacia'}</div>
+        <div class="fh-sub">OAB: ${escOAB || '—'} | FICHA CADASTRAL DE CLIENTE</div>
+      </div>
+      <div class="fh-data">
+        <div>Nº da ficha</div>
+        <div class="fh-num">${numFicha}</div>
+        <div style="margin-top:4px">Emitida em ${hoje}</div>
+      </div>
+    </div>
+    <div class="ficha-body">
+
+      <div class="fb-secao">
+        <div class="fb-secao-titulo">Identificação</div>
+        <div style="overflow:hidden">
+          <div class="foto-area"><span>Espaço para<br>foto 3×4</span></div>
+          <div class="fb-grid">
+            ${campo('Nome completo', cliNome, true)}
+            ${campo('CPF', v('cliCPF'))}
+            ${campo('RG / Órgão emissor', v('cliRG'))}
+            ${campo('Data de nascimento', fmtData(nasc) + (idade ? ` (${idade})` : ''))}
+            ${campo('Estado civil', v('cliEstCivil'))}
+            ${campo('Nacionalidade', v('cliNac'))}
+            ${campo('Naturalidade', v('cliNatural'))}
+            ${campo('Profissão', v('cliProf'))}
+          </div>
+        </div>
+      </div>
+
+      <div class="fb-secao">
+        <div class="fb-secao-titulo">Contato e Endereço</div>
+        <div class="fb-grid">
+          ${campo('Telefone / WhatsApp', v('cliTel'))}
+          ${campo('E-mail', v('cliEmail'))}
+          ${campo('Endereço', v('cliEnd'), true)}
+          ${campo('Bairro', v('cliBairro'))}
+          ${campo('Cidade / UF', v('cliCidade'))}
+          ${campo('CEP', v('cliCEP'))}
+        </div>
+      </div>
+
+      <div class="fb-secao">
+        <div class="fb-secao-titulo">Informações do Caso</div>
+        <div class="fb-grid">
+          ${campo('Área do direito', v('areaDir'))}
+          ${campo('Data do 1º atendimento', fmtData(v('dataPrimeiro')))}
+          ${campo('Resumo do caso', v('resumoCaso'), true)}
+          ${campo('Parte contrária', v('parteContraria'))}
+          ${campo('Nº do processo', v('numProcesso'))}
+          ${campo('Valor estimado da causa', fmtMoeda(v('valorCausa')))}
+        </div>
+      </div>
+
+      <div class="fb-secao">
+        <div class="fb-secao-titulo">Origem</div>
+        <div class="fb-grid">
+          ${campo('Como nos conheceu', v('comoConheceu'))}
+          ${campo('Indicado por', v('indicadoPor'))}
+        </div>
+      </div>
+
+    </div>
+    <div class="ficha-footer">
+      <div>Declaro que as informações prestadas são verdadeiras.</div>
+      <div class="ff-assinatura">
+        <div class="ff-linha"></div>
+        <div class="ff-txt">Assinatura do cliente</div>
+        <div class="ff-txt">${hoje}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('ficha-box').innerHTML = html;
+  document.getElementById('ficha-wrap').classList.add('visible');
+  document.getElementById('ficha-wrap').scrollIntoView({ behavior: 'smooth' });
+}
+
+function limpar() {
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.type === 'date') el.value = '';
+    else if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else if (el.id === 'cliNac') el.value = 'Brasileiro(a)';
+    else el.value = '';
+  });
+  document.getElementById('ficha-wrap').classList.remove('visible');
+  hideErro();
+}
+
+// Init
+document.getElementById('dataPrimeiro').value = new Date().toISOString().split('T')[0];
+document.getElementById('numFicha').value = `001/${new Date().getFullYear()}`;
+</script>
+</body>
+</html>
